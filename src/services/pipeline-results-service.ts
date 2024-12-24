@@ -170,6 +170,8 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     const parsedData: VeracodePipelineResult.ResultsData = JSON.parse(data);
     findingsArray = parsedData.findings;
     veracodePipelineResult = JSON.parse(data);
+    core.info('preparePipelineResults : parsedData');
+    core.info(JSON.stringify(parsedData));
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
     core.setFailed('Error reading or parsing pipeline scan results.');
