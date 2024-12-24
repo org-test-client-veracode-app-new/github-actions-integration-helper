@@ -5,11 +5,16 @@ import { Inputs, vaildateScanResultsActionInput } from '../inputs';
 import * as VeracodePolicyResult from '../namespaces/VeracodePolicyResult';
 import * as Checks from '../namespaces/Checks';
 import { updateChecks } from './check-service';
+import appConfig from '../app-config';
+import * as VeracodeApplication from '../namespaces/VeracodeApplication';
+import * as http from '../api/http-request';
 
 export async function preparePolicyResults(inputs: Inputs): Promise<void> {
   const octokit = new Octokit({
     auth: inputs.token,
   });
+
+  core.info('preparePolicyResults : 1');
 
   const repo = inputs.source_repository.split('/');
   const ownership = {
@@ -63,6 +68,34 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
 
   core.info(`Policy findings: ${findingsArray.length}`);
   core.info(`Results URL: ${resultsUrl}`);
+
+  core.info('preparePipelineResults : inputs');
+  core.info(JSON.stringify(inputs));
+
+  const getSelfUserDetailsResource = {
+    resourceUri: appConfig.api.veracode.selfUserUri,
+    queryAttribute: '',
+    queryValue: '',
+  };
+
+  const applicationResponse: VeracodeApplication.OrganizationData =
+      await http.getResourceByAttribute<VeracodeApplication.OrganizationData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
+
+  const commit_sha = inputs.head_sha;
+  const org_id = applicationResponse.organization.org_id;
+  const org_name = applicationResponse.organization.org_name;
+  //const scan_id = inputs.head_sha;
+
+  core.info('preparePipelineResults : POC values');
+  core.info('commit_sha :' + commit_sha);
+  core.info('org_id :' + org_id);
+  core.info('org_name :' + org_name);
+  //core.info('scan_id :' + scan_id);
+  core.info('preparePipelineResults : findingsArray');
+  core.info(JSON.stringify(findingsArray));
+  core.info(JSON.stringify(applicationResponse));
+
+
   if (findingsArray.length === 0) {
     core.info('No findings violates the policy, exiting and update the github check status to success');
     // update inputs.check_run_id status to success

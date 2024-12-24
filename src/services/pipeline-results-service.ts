@@ -9,6 +9,9 @@ import { Inputs, vaildateScanResultsActionInput } from '../inputs';
 import { updateChecks } from './check-service';
 import { getApplicationByName } from './application-service';
 import { getApplicationFindings } from './findings-service';
+import appConfig from '../app-config';
+import * as VeracodeApplication from '../namespaces/VeracodeApplication';
+import * as http from '../api/http-request';
 
 const LINE_NUMBER_SLOP = 3; //adjust to allow for line number movement
 
@@ -122,6 +125,7 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
 }
 
 export async function preparePipelineResults(inputs: Inputs): Promise<void> {
+  core.info('preparePipelineResults : 1');
   const workflow_app = inputs.workflow_app;
   if (!workflow_app) {
     preparePipelineResultsNonWorkflowApp(inputs);
@@ -185,6 +189,34 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   const artifactName = 'Veracode Pipeline-Scan Results - '+inputs.filtered_results_file+' - Mitigated findings';
   const rootDirectory = process.cwd();
   const artifactClient = new DefaultArtifactClient();
+
+
+  core.info('preparePipelineResults : inputs');
+  core.info(JSON.stringify(inputs));
+
+  const getSelfUserDetailsResource = {
+    resourceUri: appConfig.api.veracode.selfUserUri,
+    queryAttribute: '',
+    queryValue: '',
+  };
+
+  const applicationResponse: VeracodeApplication.OrganizationData =
+      await http.getResourceByAttribute<VeracodeApplication.OrganizationData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
+
+  const commit_sha = inputs.head_sha;
+  const org_id = applicationResponse.organization.org_id;
+  const org_name = applicationResponse.organization.org_name;
+  //const scan_id = inputs.head_sha;
+
+  core.info('preparePipelineResults : POC values');
+  core.info('commit_sha :' + commit_sha);
+  core.info('org_id :' + org_id);
+  core.info('org_name :' + org_name);
+  //core.info('scan_id :' + scan_id);
+  core.info('preparePipelineResults : findingsArray');
+  core.info(JSON.stringify(findingsArray));
+
+  core.info(JSON.stringify(applicationResponse));
 
   if (findingsArray.length === 0) {
     try {
