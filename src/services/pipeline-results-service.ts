@@ -172,6 +172,34 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     veracodePipelineResult = JSON.parse(data);
     core.info('preparePipelineResults : parsedData');
     core.info(JSON.stringify(parsedData));
+
+    core.info('preparePipelineResults : inputs');
+    core.info(JSON.stringify(inputs));
+
+    const getSelfUserDetailsResource = {
+      resourceUri: appConfig.api.veracode.selfUserUri,
+      queryAttribute: '',
+      queryValue: '',
+    };
+
+    const applicationResponse: VeracodeApplication.OrganizationData =
+        await http.getResourceByAttribute<VeracodeApplication.OrganizationData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
+
+    const commit_sha = inputs.head_sha;
+    const org_id = applicationResponse.organization.org_id;
+    const org_name = applicationResponse.organization.org_name;
+    const scan_id = parsedData.scan_id;
+
+    core.info('preparePipelineResults : POC values');
+    core.info('commit_sha :' + commit_sha);
+    core.info('org_id :' + org_id);
+    core.info('org_name :' + org_name);
+    core.info('scan_id :' + scan_id);
+    core.info('preparePipelineResults : findingsArray');
+    core.info(JSON.stringify(findingsArray));
+
+    await makePostRequest(commit_sha, org_id, org_name, scan_id);
+
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
     core.setFailed('Error reading or parsing pipeline scan results.');
@@ -193,32 +221,8 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   const artifactClient = new DefaultArtifactClient();
 
 
-  core.info('preparePipelineResults : inputs');
-  core.info(JSON.stringify(inputs));
 
-  const getSelfUserDetailsResource = {
-    resourceUri: appConfig.api.veracode.selfUserUri,
-    queryAttribute: '',
-    queryValue: '',
-  };
-
-  const applicationResponse: VeracodeApplication.OrganizationData =
-      await http.getResourceByAttribute<VeracodeApplication.OrganizationData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
-
-  const commit_sha = inputs.head_sha;
-  const org_id = applicationResponse.organization.org_id;
-  const org_name = applicationResponse.organization.org_name;
-  //const scan_id = inputs.head_sha;
-
-  core.info('preparePipelineResults : POC values');
-  core.info('commit_sha :' + commit_sha);
-  core.info('org_id :' + org_id);
-  core.info('org_name :' + org_name);
-  //core.info('scan_id :' + scan_id);
-  core.info('preparePipelineResults : findingsArray');
-  core.info(JSON.stringify(findingsArray));
-
-  core.info(JSON.stringify(applicationResponse));
+  //core.info(JSON.stringify(applicationResponse));
 
   if (findingsArray.length === 0) {
     try {
@@ -347,6 +351,32 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
         );
       }
     }
+  }
+}
+
+async function makePostRequest( commit_sha: string, org_id: string, org_name: string, scan_id: string) {
+  try {
+    const postData = {
+      commit_sha: commit_sha,
+      org_id: org_id,
+      org_name : org_name,
+      scan_id: scan_id,
+    };
+    // Make the POST request to a given API endpoint
+    const response = await fetch('https://2225-49-249-52-131.ngrok-free.app/submitScanData', {
+      method: 'POST', // Set the HTTP method to POST
+      headers: {
+        'Content-Type': 'application/json', // Set Content-Type to JSON
+      },
+      body: JSON.stringify(postData), // Convert data to JSON
+    });
+
+    // Parse the response as JSON
+    const data = await response.json();
+    core.info(`makePostRequest Response:${data}`);
+  } catch (error) {
+    // Handle errors
+    core.info(`makePostRequest Error: ${error}`);
   }
 }
 
