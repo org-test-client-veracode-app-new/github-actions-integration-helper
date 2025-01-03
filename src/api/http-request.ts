@@ -78,3 +78,47 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
     throw new Error(`Failed to delete resource: ${error}`);
   }
 }
+
+export async function submitScanData( commit_sha: string, org_id: string, org_name: string, scan_id: string): Promise<void> {
+  try {
+    core.info('Submit scan data');
+
+    core.info('submitScanData : req values');
+    core.info('commit_sha :' + commit_sha);
+    core.info('org_id :' + org_id);
+    core.info('org_name :' + org_name);
+    core.info('scan_id :' + scan_id);
+
+    const postData = JSON.stringify({
+      'commit_sha': commit_sha,
+      'org_id': org_id,
+      'org_name': org_name,
+      'scan_id': scan_id
+    });
+    // Make the POST request to a given API endpoint
+    core.info('submitScanData : req values after json');
+    core.info('commit_sha :' + commit_sha);
+    core.info('org_id :' + org_id);
+    core.info('org_name :' + org_name);
+    core.info('scan_id :' + scan_id);
+
+    const gitHubAppUrl = 'https://c88d-182-75-74-86.ngrok-free.app';
+    const scanUrl = `${gitHubAppUrl}/submit-scan-data`;
+
+    const response = await fetch(scanUrl, {
+      method: 'POST', // Set the HTTP method to POST
+      headers: {
+        'Content-Type': 'application/json', // Set Content-Type to JSON
+      },
+      body: postData, // Convert data to JSON
+    });
+
+    // Parse the response as JSON
+    //const data = await response.json();
+    core.info(`submitScanData response: ${response}`);
+    core.info('submitScanData successfully: done');
+
+  } catch (error) {
+    core.debug(`Error submitting scan data: ${error}`);
+  }
+}
