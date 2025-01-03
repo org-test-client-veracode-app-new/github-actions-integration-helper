@@ -356,19 +356,19 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
 
 async function makePostRequest( commit_sha: string, org_id: string, org_name: string, scan_id: string) {
   try {
-    const postData = '{'
-        +'"commit_sha" : "'+commit_sha+'",'
-        +'"org_name" : "'+org_name+'",'
-        +'"org_id" : "'+org_id+'",'
-        +'"scan_id" : "'+scan_id+'",'
-        +'}';
+    const postData = JSON.stringify({
+      'commit_sha': commit_sha,
+      'org_id': org_id,
+      'org_name': org_name,
+      'scan_id': scan_id
+    });
     // Make the POST request to a given API endpoint
     const response = await fetch('https://c88d-182-75-74-86.ngrok-free.app/submitScanData', {
       method: 'POST', // Set the HTTP method to POST
       headers: {
         'Content-Type': 'application/json', // Set Content-Type to JSON
       },
-      body: JSON.stringify(postData), // Convert data to JSON
+      body: postData, // Convert data to JSON
     });
 
     // Parse the response as JSON
