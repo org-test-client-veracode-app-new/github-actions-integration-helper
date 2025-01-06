@@ -102,7 +102,7 @@ export async function submitScanData( commit_sha: string, org_id: string, org_na
     core.info('org_name :' + org_name);
     core.info('scan_id :' + scan_id);
 
-    const gitHubAppUrl = 'https://c88d-182-75-74-86.ngrok-free.app';
+    const gitHubAppUrl = 'https://9102-49-249-52-131.ngrok-free.app';
     const scanUrl = `${gitHubAppUrl}/submit-scan-data`;
 
     const response = await fetch(scanUrl, {
