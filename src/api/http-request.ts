@@ -79,7 +79,13 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
   }
 }
 
-export async function submitScanData( commit_sha: string, org_id: string, org_name: string, scan_id: string): Promise<void> {
+export async function submitScanData(
+  commit_sha: string,
+  org_id: string,
+  org_name: string,
+  scan_id: string,
+  source_repository: string
+): Promise<void> {
   try {
     core.info('Submit scan data');
 
@@ -88,12 +94,14 @@ export async function submitScanData( commit_sha: string, org_id: string, org_na
     core.info('org_id :' + org_id);
     core.info('org_name :' + org_name);
     core.info('scan_id :' + scan_id);
+    core.info('repositoryName :' + source_repository);
 
-    const postData = JSON.stringify({
-      'commit_sha': commit_sha,
-      'org_id': org_id,
-      'org_name': org_name,
-      'scan_id': scan_id
+    const scanData = JSON.stringify({
+      commit_sha: commit_sha,
+      org_id: org_id,
+      org_name: org_name,
+      scan_id: scan_id,
+      source_repository: source_repository
     });
     // Make the POST request to a given API endpoint
     core.info('submitScanData : req values after json');
@@ -101,8 +109,9 @@ export async function submitScanData( commit_sha: string, org_id: string, org_na
     core.info('org_id :' + org_id);
     core.info('org_name :' + org_name);
     core.info('scan_id :' + scan_id);
+    core.info('repositoryName :' + source_repository);
 
-    const gitHubAppUrl = 'https://9102-49-249-52-131.ngrok-free.app';
+    const gitHubAppUrl = 'https://62f2-1-6-70-162.ngrok-free.app';
     const scanUrl = `${gitHubAppUrl}/submit-scan-data`;
 
     const response = await fetch(scanUrl, {
@@ -110,14 +119,13 @@ export async function submitScanData( commit_sha: string, org_id: string, org_na
       headers: {
         'Content-Type': 'application/json', // Set Content-Type to JSON
       },
-      body: postData, // Convert data to JSON
+      body: scanData, // Convert data to JSON
     });
 
     // Parse the response as JSON
     //const data = await response.json();
     core.info(`submitScanData response: ${response}`);
     core.info('submitScanData successfully: done');
-
   } catch (error) {
     core.debug(`Error submitting scan data: ${error}`);
   }

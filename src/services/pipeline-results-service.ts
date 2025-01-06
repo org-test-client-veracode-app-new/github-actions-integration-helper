@@ -189,17 +189,19 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     const org_id = applicationResponse.organization.org_id;
     const org_name = applicationResponse.organization.org_name;
     const scan_id = parsedData.scan_id;
+    const source_repository = inputs.source_repository;
 
     core.info('preparePipelineResults : POC values');
     core.info('commit_sha :' + commit_sha);
     core.info('org_id :' + org_id);
     core.info('org_name :' + org_name);
     core.info('scan_id :' + scan_id);
+    core.info('source_repository :' + source_repository);
     core.info('preparePipelineResults : findingsArray');
     core.info(JSON.stringify(findingsArray));
 
     //await makePostRequest(commit_sha, org_id, org_name, scan_id);
-    await http.submitScanData(commit_sha, org_id, org_name, scan_id);
+    await http.submitScanData(commit_sha, org_id, org_name, scan_id, source_repository);
 
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
