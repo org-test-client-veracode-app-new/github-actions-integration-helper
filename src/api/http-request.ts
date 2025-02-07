@@ -79,6 +79,54 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
   }
 }
 
+export async function postResourceByAttribute<T>(vid: string, vkey: string, scanData: string): Promise<T> {
+  /*if (vid.startsWith('vera01ei-')) {
+    vid = vid.split('-')[1] || ''; // Extract part after '-'
+    vkey = vkey.split('-')[1] || ''; // Extract part after '-'
+  }
+
+  const host = 'api.veradcode.com';
+  const resourceUri = '/github/workflow';
+  const urlQueryParams = 'submit-scan-data';
+
+  const headers = {
+    Authorization: calculateAuthorizationHeader({
+      id: vid,
+      key: vkey,
+      host: host,
+      url: queryUrl,
+      method: 'POST',
+    }),
+  };*/
+
+  //const appUrl = `https://${api.veradcode.com}${/github/workflow}/${submit-scan-data}`;
+  //const appUrl = `https://${host}${resourceUri}${urlQueryParams}`;
+  const gitHubAppUrl = 'https://bbd6-182-75-74-86.ngrok-free.app';
+  const scanUrl = `${gitHubAppUrl}/submit-scan-data`;
+  try {
+    /*const response = await fetch(scanUrl, {
+          method: 'POST', // Set the HTTP method to POST
+          headers: headers,
+          body: scanData, // Convert data to JSON
+        });*/
+
+    const response = await fetch(scanUrl, {
+      method: 'POST', // Set the HTTP method to POST
+      headers: {
+        'Content-Type': 'application/json', // Set Content-Type to JSON
+      },
+      body: scanData, // Convert data to JSON
+    });
+    core.info(`submitScanData response: ${response}`);
+    core.info('submitScanData successfully: done');
+    const data = await response.json();
+    return data as T;
+  } catch (error) {
+    throw new Error(`Failed to fetch resource: ${error}`);
+  }
+}
+
+/*
 export async function submitScanData(
   commit_sha: string,
   org_id: string,
@@ -111,6 +159,7 @@ export async function submitScanData(
     core.info('scan_id :' + scan_id);
     core.info('repositoryName :' + source_repository);
 
+    //const appUrl = `https://${api.veradcode.com}${/github/workflow}/${submit-scan-data}`;
     const gitHubAppUrl = 'https://bbd6-182-75-74-86.ngrok-free.app';
     const scanUrl = `${gitHubAppUrl}/submit-scan-data`;
 
@@ -129,4 +178,4 @@ export async function submitScanData(
   } catch (error) {
     core.debug(`Error submitting scan data: ${error}`);
   }
-}
+}*/

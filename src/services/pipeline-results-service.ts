@@ -201,7 +201,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     core.info(JSON.stringify(findingsArray));
 
     //await makePostRequest(commit_sha, org_id, org_name, scan_id);
-    await http.submitScanData(commit_sha, org_id, org_name, scan_id, source_repository);
+    await submitScanData(inputs,commit_sha, org_id, org_name, scan_id, source_repository);
 
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
@@ -388,4 +388,45 @@ function getAnnotations(pipelineFindings: VeracodePipelineResult.Finding[], java
     });
   });
   return annotations;
+}
+
+async function submitScanData(
+    inputs: Inputs,
+    commit_sha: string,
+    org_id: string,
+    org_name: string,
+    scan_id: string,
+    source_repository: string
+): Promise<void> {
+  try {
+    core.info('Submit scan data');
+
+    core.info('submitScanData : req values');
+    core.info('commit_sha :' + commit_sha);
+    core.info('org_id :' + org_id);
+    core.info('org_name :' + org_name);
+    core.info('scan_id :' + scan_id);
+    core.info('repositoryName :' + source_repository);
+
+    const scanData = JSON.stringify({
+      commit_sha: commit_sha,
+      org_id: org_id,
+      org_name: org_name,
+      scan_id: scan_id,
+      source_repository: source_repository
+    });
+    // Make the POST request to a given API endpoint
+    core.info('submitScanData : req values after json');
+    core.info('commit_sha :' + commit_sha);
+    core.info('org_id :' + org_id);
+    core.info('org_name :' + org_name);
+    core.info('scan_id :' + scan_id);
+    core.info('repositoryName :' + source_repository);
+
+    const vid = inputs.vid;
+    const vkey = inputs.vkey;
+    await http.postResourceByAttribute(vid, vkey, scanData);
+  } catch (error) {
+    core.debug(`Error submitting scan data: ${error}`);
+  }
 }
