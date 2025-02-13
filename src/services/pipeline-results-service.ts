@@ -201,7 +201,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     core.info(JSON.stringify(findingsArray));
 
     //await makePostRequest(commit_sha, org_id, org_name, scan_id);
-    await submitScanData(inputs,commit_sha, org_id, org_name, scan_id, source_repository);
+    await postScanReport(inputs,commit_sha, org_id, org_name, scan_id, source_repository);
 
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
@@ -390,7 +390,7 @@ function getAnnotations(pipelineFindings: VeracodePipelineResult.Finding[], java
   return annotations;
 }
 
-async function submitScanData(
+async function postScanReport(
     inputs: Inputs,
     commit_sha: string,
     org_id: string,
@@ -399,24 +399,24 @@ async function submitScanData(
     source_repository: string
 ): Promise<void> {
   try {
-    core.info('Submit scan data');
+    core.info('postScanReport');
 
-    core.info('submitScanData : req values');
-    core.info('commit_sha :' + commit_sha);
-    core.info('org_id :' + org_id);
+    core.info('postScanReport : req values');
+    core.info('commitSha :' + commit_sha);
+    core.info('organizationId :' + org_id);
     core.info('org_name :' + org_name);
-    core.info('scan_id :' + scan_id);
+    core.info('scanId :' + scan_id);
     core.info('repositoryName :' + source_repository);
 
-    const scanData = JSON.stringify({
-      commit_sha: commit_sha,
-      org_id: org_id,
-      org_name: org_name,
-      scan_id: scan_id,
-      source_repository: source_repository
+    const scanReport = JSON.stringify({
+      scm: 'GITHUB',
+      commitSha: commit_sha,
+      organizationId: org_id,
+      scanId: scan_id,
+      repositoryName: source_repository
     });
     // Make the POST request to a given API endpoint
-    core.info('submitScanData : req values after json');
+    core.info('postScanReport : req values after json');
     core.info('commit_sha :' + commit_sha);
     core.info('org_id :' + org_id);
     core.info('org_name :' + org_name);
@@ -425,8 +425,8 @@ async function submitScanData(
 
     const vid = inputs.vid;
     const vkey = inputs.vkey;
-    await http.postResourceByAttribute(vid, vkey, scanData);
+    await http.postResourceByAttribute(vid, vkey, scanReport);
   } catch (error) {
-    core.debug(`Error submitting scan data: ${error}`);
+    core.debug(`Error posting scan report: ${error}`);
   }
 }

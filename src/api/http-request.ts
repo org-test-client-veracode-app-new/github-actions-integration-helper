@@ -79,7 +79,7 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
   }
 }
 
-export async function postResourceByAttribute<T>(vid: string, vkey: string, scanData: string): Promise<T> {
+export async function postResourceByAttribute<T>(vid: string, vkey: string, scanReport: string): Promise<T> {
   /*if (vid.startsWith('vera01ei-')) {
     vid = vid.split('-')[1] || ''; // Extract part after '-'
     vkey = vkey.split('-')[1] || ''; // Extract part after '-'
@@ -101,8 +101,8 @@ export async function postResourceByAttribute<T>(vid: string, vkey: string, scan
 
   //const appUrl = `https://${api.veradcode.com}${/github/workflow}/${submit-scan-data}`;
   //const appUrl = `https://${host}${resourceUri}${urlQueryParams}`;
-  const gitHubAppUrl = 'https://bbd6-182-75-74-86.ngrok-free.app';
-  const scanUrl = `${gitHubAppUrl}/submit-scan-data`;
+  const relayServiceUrl = 'https://14c0-169-224-169-21.ngrok-free.app';
+  const scanReportUrl = `${relayServiceUrl}/api/scan-report`;
   try {
     /*const response = await fetch(scanUrl, {
           method: 'POST', // Set the HTTP method to POST
@@ -110,19 +110,19 @@ export async function postResourceByAttribute<T>(vid: string, vkey: string, scan
           body: scanData, // Convert data to JSON
         });*/
 
-    const response = await fetch(scanUrl, {
+    const response = await fetch(scanReportUrl, {
       method: 'POST', // Set the HTTP method to POST
       headers: {
         'Content-Type': 'application/json', // Set Content-Type to JSON
       },
-      body: scanData, // Convert data to JSON
+      body: scanReport, // Convert data to JSON
     });
-    core.info(`submitScanData response: ${response}`);
-    core.info('submitScanData successfully: done');
+    core.info(`postScanReport response: ${response}`);
+    core.info('postScanReport successfully: done');
     const data = await response.json();
     return data as T;
   } catch (error) {
-    throw new Error(`Failed to fetch resource: ${error}`);
+    throw new Error(`Failed to post resource: ${error}`);
   }
 }
 
