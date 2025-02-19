@@ -80,43 +80,51 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
 }
 
 export async function postResourceByAttribute<T>(vid: string, vkey: string, scanReport: string): Promise<T> {
-  /*if (vid.startsWith('vera01ei-')) {
-    vid = vid.split('-')[1] || ''; // Extract part after '-'
+  const resourceUri = appConfig.api.veracode.applicationUri;
+  core.info(`resourceUri : ${resourceUri}`);
+  core.info(`host : ${appConfig.hostName.veracode.us}`);
+  core.info(`vid: ${vid}`);
+  core.info(`vkey response: ${vkey}`);
+
+
+  let host = appConfig.hostName.veracode.us;
+  if (vid.startsWith('vera01ei-')) {
+    host = appConfig.hostName.veracode.eu;
+    vid = vid.split('-')[1] || '';  // Extract part after '-'
     vkey = vkey.split('-')[1] || ''; // Extract part after '-'
   }
-
-  const host = 'api.veradcode.com';
-  const resourceUri = '/github/workflow';
-  const urlQueryParams = 'submit-scan-data';
 
   const headers = {
     Authorization: calculateAuthorizationHeader({
       id: vid,
       key: vkey,
       host: host,
-      url: queryUrl,
+      url: resourceUri,
       method: 'POST',
     }),
-  };*/
+  };
+   try {
+    const appUrl = `https://${host}${resourceUri}`;
+    core.info(`appUrl response: ${appUrl}`);
+    //const relayServiceUrl = 'https://14c0-169-224-169-21.ngrok-free.app';
+    //const relayServiceUrl = 'https://14c0-169-224-169-21.ngrok-free.app';
+     // const relayServiceUrl = 'https://api-agora-stage-132.stage.veracode.io/vrm-relay-service/api/scan-report';
+    //const scanReportUrl = `${relayServiceUrl}/api/scan-report`;
 
-  //const appUrl = `https://${api.veradcode.com}${/github/workflow}/${submit-scan-data}`;
-  //const appUrl = `https://${host}${resourceUri}${urlQueryParams}`;
-  const relayServiceUrl = 'https://14c0-169-224-169-21.ngrok-free.app';
-  const scanReportUrl = `${relayServiceUrl}/api/scan-report`;
-  try {
-    /*const response = await fetch(scanUrl, {
+     const relayServiceUrl = 'https://api-agora-stage-132.stage.veracode.io/vrm-relay-service/api/scan-report';
+     const response = await fetch(relayServiceUrl, {
           method: 'POST', // Set the HTTP method to POST
           headers: headers,
-          body: scanData, // Convert data to JSON
-        });*/
+          body: scanReport, // Convert data to JSON
+        });
 
-    const response = await fetch(scanReportUrl, {
+    /*const response1 = await fetch(scanReportUrl, {
       method: 'POST', // Set the HTTP method to POST
       headers: {
         'Content-Type': 'application/json', // Set Content-Type to JSON
       },
       body: scanReport, // Convert data to JSON
-    });
+    });*/
     core.info(`postScanReport response: ${response}`);
     core.info('postScanReport successfully: done');
     const data = await response.json();
