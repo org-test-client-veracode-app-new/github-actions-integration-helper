@@ -81,12 +81,21 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
 
 export async function postResourceByAttribute<T>(vid: string, vkey: string, scanReport: string): Promise<T> {
   const resourceUri = appConfig.api.veracode.relayServiceUri;
-  let host = appConfig.hostName.veracode.us;
-  if (vid.startsWith('vera01ei-')) {
-    host = appConfig.hostName.veracode.eu;
+  //let host = appConfig.hostName.veracode.us;
+  //const host = 'api-agora-stage-132.stage.veracode.io';
+  const host = 'api-agora-stage-107.stage.veracode.io';
+  //const hostQA = 'https://web-agora-stage-107.stage.veracode.io';
+  if (vid.startsWith('vera01')) {
+    core.info('true');
+    //host = appConfig.hostName.veracode.us;
+
     vid = vid.split('-')[1] || '';  // Extract part after '-'
     vkey = vkey.split('-')[1] || ''; // Extract part after '-'
   }
+
+
+  //const resData = JSON.stringify(scanReport);
+  core.info(`postScanReport response: ${scanReport}`);
 
   const headers = {
     Authorization: calculateAuthorizationHeader({
@@ -96,23 +105,24 @@ export async function postResourceByAttribute<T>(vid: string, vkey: string, scan
       url: resourceUri,
       method: 'POST',
     }),
+    'Content-Type':'application/json',
   };
    try {
     const appUrl = `https://${host}${resourceUri}`;
     core.info(`appUrl response: ${appUrl}`);
 
-    const relayServiceUrl = 'https://api-agora-stage-132.stage.veracode.io/vrm-relay-service/api/scan-report';
-    const response = await fetch(relayServiceUrl, {
+    const response = await fetch(appUrl, {
           method: 'POST', // Set the HTTP method to POST
           headers: headers,
           body: scanReport, // Convert data to JSON
         });
 
-    const resData = JSON.stringify(response);
-    core.info(`postScanReport response: ${resData}`);
-    core.info('postScanReport successfully: done');
     const data = await response.json();
+     const resData = JSON.stringify(data);
+     core.info(`postScanReport response: ${resData}`);
+     core.info('postScanReport successfully: done');
     return data as T;
+     //return appUrl as T;
   } catch (error) {
     throw new Error(`Failed to post resource: ${error}`);
   }

@@ -49,9 +49,45 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
 
   try {
     const data = await fs.readFile('policy_flaws.json', 'utf-8');
+    core.info('preparePolicyResults : policy_flaws');
+    core.info(JSON.stringify(JSON.stringify(data)));
     const parsedData: VeracodePolicyResult.ResultsData = JSON.parse(data);
     findingsArray = parsedData._embedded.findings;
     resultsUrl = await fs.readFile('results_url.txt', 'utf-8');
+
+    core.info('preparePolicyResults : parsedData');
+    core.info(JSON.stringify(parsedData));
+
+    core.info('preparePolicyResults : inputs');
+    core.info(JSON.stringify(inputs));
+
+    const getSelfUserDetailsResource = {
+      resourceUri: appConfig.api.veracode.selfUserUri,
+      queryAttribute: '',
+      queryValue: '',
+    };
+    const applicationResponse: VeracodeApplication.OrganizationData =
+        await http.getResourceByAttribute<VeracodeApplication.OrganizationData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
+
+    const commit_sha = inputs.head_sha;
+    const org_id = applicationResponse.organization.org_id;
+    const org_name = applicationResponse.organization.org_name;
+    //const scan_id = parsedData.scan_id;
+    const scan_id = '';
+    const source_repository = inputs.source_repository;
+
+    core.info('preparePipelineResults : POC values');
+    core.info('commit_sha :' + commit_sha);
+    core.info('org_id :' + org_id);
+    core.info('org_name :' + org_name);
+    core.info('scan_id :' + scan_id);
+    core.info('source_repository :' + source_repository);
+    core.info('preparePipelineResults : findingsArray');
+    core.info(JSON.stringify(findingsArray));
+
+    //await makePostRequest(commit_sha, org_id, org_name, scan_id);
+    //await postScanReport(inputs,commit_sha, org_id, org_name, scan_id, source_repository);
+
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
     core.setFailed('Error reading or parsing pipeline scan results.');
@@ -184,4 +220,45 @@ function getAnnotations(policyFindings: VeracodePolicyResult.Finding[], javaMave
   });
 
   return annotations;
+}
+
+async function postScanReport(
+    inputs: Inputs,
+    commit_sha: string,
+    org_id: string,
+    org_name: string,
+    scan_id: string,
+    source_repository: string
+): Promise<void> {
+  try {
+    core.info('postScanReport');
+
+    core.info('postScanReport : req values');
+    core.info('commitSha :' + commit_sha);
+    core.info('organizationId :' + org_id);
+    core.info('org_name :' + org_name);
+    core.info('scanId :' + scan_id);
+    core.info('repositoryName :' + source_repository);
+
+    const scanReport = JSON.stringify({
+      scm: 'GITHUB',
+      commitSha: commit_sha,
+      organizationId: org_id,
+      scanId: scan_id,
+      repositoryName: source_repository
+    });
+    // Make the POST request to a given API endpoint
+    core.info('postScanReport : req values after json');
+    core.info('commit_sha :' + commit_sha);
+    core.info('org_id :' + org_id);
+    core.info('org_name :' + org_name);
+    core.info('scan_id :' + scan_id);
+    core.info('repositoryName :' + source_repository);
+
+    const vid = inputs.vid;
+    const vkey = inputs.vkey;
+    await http.postResourceByAttribute(vid, vkey, scanReport);
+  } catch (error) {
+    core.debug(`Error posting scan report: ${error}`);
+  }
 }
