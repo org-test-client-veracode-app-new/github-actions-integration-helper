@@ -201,7 +201,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     core.info(JSON.stringify(findingsArray));
 
     //await makePostRequest(commit_sha, org_id, org_name, scan_id);
-    await postScanReport(inputs,commit_sha, org_id, org_name, scan_id, source_repository);
+    //await postScanReport(inputs,commit_sha, org_id, org_name, scan_id, source_repository);
 
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);

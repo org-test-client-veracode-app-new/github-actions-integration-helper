@@ -50,7 +50,7 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
   try {
     const data = await fs.readFile('policy_flaws.json', 'utf-8');
     core.info('preparePolicyResults : policy_flaws');
-    core.info(JSON.stringify(JSON.stringify(data)));
+    core.info(JSON.stringify(data));
     const parsedData: VeracodePolicyResult.ResultsData = JSON.parse(data);
     findingsArray = parsedData._embedded.findings;
     resultsUrl = await fs.readFile('results_url.txt', 'utf-8');
@@ -208,8 +208,6 @@ async function postScanReport(
     source_repository: string
 ): Promise<void> {
   try {
-    core.info('postScanReport');
-
     core.info('postScanReport : req values');
     core.info('commitSha :' + commit_sha);
     core.info('organizationId :' + org_id);
@@ -225,9 +223,10 @@ async function postScanReport(
       repositoryName: source_repository
     });
     // Make the POST request to a given API endpoint
-    const vid = inputs.vid;
-    const vkey = inputs.vkey;
-    await http.postResourceByAttribute(vid, vkey, scanReport);
+    core.info(JSON.stringify(scanReport));
+    //const vid = inputs.vid;
+    //const vkey = inputs.vkey;
+    //await http.postResourceByAttribute(vid, vkey, scanReport);
   } catch (error) {
     core.debug(`Error posting scan report: ${error}`);
   }
