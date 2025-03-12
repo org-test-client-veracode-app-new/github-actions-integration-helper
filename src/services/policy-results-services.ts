@@ -49,17 +49,9 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
 
   try {
     const data = await fs.readFile('policy_flaws.json', 'utf-8');
-    core.info('preparePolicyResults : policy_flaws');
-    core.info(JSON.stringify(data));
     const parsedData: VeracodePolicyResult.ResultsData = JSON.parse(data);
     findingsArray = parsedData._embedded.findings;
     resultsUrl = await fs.readFile('results_url.txt', 'utf-8');
-
-    core.info('preparePolicyResults : parsedData');
-    core.info(JSON.stringify(parsedData));
-
-    core.info('preparePolicyResults : inputs');
-    core.info(JSON.stringify(inputs));
 
     const getSelfUserDetailsResource = {
       resourceUri: appConfig.api.veracode.selfUserUri,
@@ -223,7 +215,7 @@ async function postScanReport(
       repositoryName: source_repository
     });
     // Make the POST request to a given API endpoint
-    core.info(JSON.stringify(scanReport));
+    core.info(scanReport);
     //const vid = inputs.vid;
     //const vkey = inputs.vkey;
     //await http.postResourceByAttribute(vid, vkey, scanReport);

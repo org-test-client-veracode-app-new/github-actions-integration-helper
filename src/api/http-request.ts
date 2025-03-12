@@ -105,17 +105,15 @@ export async function postResourceByAttribute<T>(vid: string, vkey: string, scan
     core.info(`appUrl response: ${appUrl}`);
 
     const response = await fetch(appUrl, {
-          method: 'POST', // Set the HTTP method to POST
+          method: 'POST',
           headers: headers,
-          body: scanReport, // Convert data to JSON
+          body: scanReport,
         });
 
     const data = await response.json();
-     const resData = JSON.stringify(data);
-     core.info(`postScanReport response: ${resData}`);
-     core.info('postScanReport successfully: done');
+    core.info(`postScanReport response: ${JSON.stringify(data)}`);
+    core.info('postScanReport successfully: done');
     return data as T;
-     //return appUrl as T;
   } catch (error) {
     throw new Error(`Failed to post resource: ${error}`);
   }
