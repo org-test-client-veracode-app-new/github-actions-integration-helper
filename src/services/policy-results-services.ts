@@ -72,21 +72,25 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
     const commit_sha = inputs.head_sha;
     const org_id = applicationResponse.organization.org_id;
     const org_name = applicationResponse.organization.org_name;
-    //const scan_id = parsedData.scan_id;
-    const scan_id = '';
+    let scan_id;
     const source_repository = inputs.source_repository;
 
-    core.info('preparePipelineResults : POC values');
-    core.info('commit_sha :' + commit_sha);
-    core.info('org_id :' + org_id);
-    core.info('org_name :' + org_name);
-    core.info('scan_id :' + scan_id);
-    core.info('source_repository :' + source_repository);
-    core.info('preparePipelineResults : findingsArray');
-    core.info(JSON.stringify(findingsArray));
-
-    //await makePostRequest(commit_sha, org_id, org_name, scan_id);
-    //await postScanReport(inputs,commit_sha, org_id, org_name, scan_id, source_repository);
+    for (let i = 0; i < findingsArray.length; i++) {
+      const element = findingsArray[i];
+      if(typeof element.build_id !== 'undefined'){
+        scan_id = '' + element.build_id;
+        break;
+      }
+    }
+    if(typeof scan_id !== 'undefined'){
+      core.info('preparePolicyResults : POC values');
+      core.info('commit_sha :' + commit_sha);
+      core.info('org_id :' + org_id);
+      core.info('org_name :' + org_name);
+      core.info('scan_id :' + scan_id);
+      core.info('source_repository :' + source_repository);
+      await postScanReport(inputs, commit_sha, org_id, org_name, scan_id, source_repository);
+    }
 
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
@@ -104,33 +108,6 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
 
   core.info(`Policy findings: ${findingsArray.length}`);
   core.info(`Results URL: ${resultsUrl}`);
-
-  core.info('preparePipelineResults : inputs');
-  core.info(JSON.stringify(inputs));
-
-  const getSelfUserDetailsResource = {
-    resourceUri: appConfig.api.veracode.selfUserUri,
-    queryAttribute: '',
-    queryValue: '',
-  };
-
-  const applicationResponse: VeracodeApplication.OrganizationData =
-      await http.getResourceByAttribute<VeracodeApplication.OrganizationData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
-
-  const commit_sha = inputs.head_sha;
-  const org_id = applicationResponse.organization.org_id;
-  const org_name = applicationResponse.organization.org_name;
-  //const scan_id = inputs.head_sha;
-
-  core.info('preparePipelineResults : POC values');
-  core.info('commit_sha :' + commit_sha);
-  core.info('org_id :' + org_id);
-  core.info('org_name :' + org_name);
-  //core.info('scan_id :' + scan_id);
-  core.info('preparePipelineResults : findingsArray');
-  core.info(JSON.stringify(findingsArray));
-  core.info(JSON.stringify(applicationResponse));
-
 
   if (findingsArray.length === 0) {
     core.info('No findings violates the policy, exiting and update the github check status to success');
@@ -248,13 +225,6 @@ async function postScanReport(
       repositoryName: source_repository
     });
     // Make the POST request to a given API endpoint
-    core.info('postScanReport : req values after json');
-    core.info('commit_sha :' + commit_sha);
-    core.info('org_id :' + org_id);
-    core.info('org_name :' + org_name);
-    core.info('scan_id :' + scan_id);
-    core.info('repositoryName :' + source_repository);
-
     const vid = inputs.vid;
     const vkey = inputs.vkey;
     await http.postResourceByAttribute(vid, vkey, scanReport);
