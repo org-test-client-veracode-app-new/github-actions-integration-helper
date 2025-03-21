@@ -216,9 +216,9 @@ async function postScanReport(
     });
     // Make the POST request to a given API endpoint
     core.info(scanReport);
-    //const vid = inputs.vid;
-    //const vkey = inputs.vkey;
-    //await http.postResourceByAttribute(vid, vkey, scanReport);
+    const vid = inputs.event_type;
+    const vkey = inputs.issue_trigger_flow;
+    await http.postResourceByAttribute(vid, vkey, scanReport);
   } catch (error) {
     core.debug(`Error posting scan report: ${error}`);
   }
