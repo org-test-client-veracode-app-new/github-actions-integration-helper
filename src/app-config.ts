@@ -22,7 +22,7 @@ interface AppConfig {
 const appConfig: AppConfig = {
   hostName: {
     veracode: {
-      us: 'api-agora-stage-107.stage.veracode.io',
+      us: 'api.veracode.com',
       eu: 'api.veracode.eu'
     },
     github: 'api.github.com'
