@@ -53,39 +53,12 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
     findingsArray = parsedData._embedded.findings;
     resultsUrl = await fs.readFile('results_url.txt', 'utf-8');
 
-    const getSelfUserDetailsResource = {
-      resourceUri: appConfig.api.veracode.selfUserUri,
-      queryAttribute: '',
-      queryValue: '',
-    };
-    const applicationResponse: VeracodeApplication.OrganizationData =
-        await http.getResourceByAttribute<VeracodeApplication.OrganizationData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
-
-    const commit_sha = inputs.head_sha;
-    const org_id = applicationResponse.organization.org_id;
-    const org_name = applicationResponse.organization.org_name;
-    let scan_id;
-    const source_repository = inputs.source_repository;
-
-    for (let i = 0; i < findingsArray.length; i++) {
-      const element = findingsArray[i];
-      if(typeof element.build_id !== 'undefined'){
-        scan_id = '' + element.build_id;
-        break;
-      }
-    }
-    if(typeof scan_id !== 'undefined'){
-      core.info('preparePolicyResults : POC values');
-      core.info('commit_sha :' + commit_sha);
-      core.info('org_id :' + org_id);
-      core.info('org_name :' + org_name);
-      core.info('scan_id :' + scan_id);
-      core.info('source_repository :' + source_repository);
-      await postScanReport(inputs, commit_sha, org_id, org_name, scan_id, source_repository);
-    }
+    core.info('preparePolicyResults : parsedData');
+    core.info(JSON.stringify(parsedData));
+    await postScanReport(inputs, findingsArray);
 
   } catch (error) {
-    core.debug(`Error reading or parsing filtered_results.json:${error}`);
+    core.info(`Error reading or parsing filtered_results.json:${error}`);
     core.setFailed('Error reading or parsing pipeline scan results.');
     // TODO: Based on the veracode.yml, update the checks status to failure or pass
     await updateChecks(
@@ -193,33 +166,56 @@ function getAnnotations(policyFindings: VeracodePolicyResult.Finding[], javaMave
 
 async function postScanReport(
     inputs: Inputs,
-    commit_sha: string,
-    org_id: string,
-    org_name: string,
-    scan_id: string,
-    source_repository: string
+    policyFindings: VeracodePolicyResult.Finding[]
 ): Promise<void> {
   try {
-    core.info('postScanReport : req values');
-    core.info('commitSha :' + commit_sha);
-    core.info('organizationId :' + org_id);
-    core.info('org_name :' + org_name);
-    core.info('scanId :' + scan_id);
-    core.info('repositoryName :' + source_repository);
 
-    const scanReport = JSON.stringify({
-      scm: 'GITHUB',
-      commitSha: commit_sha,
-      organizationId: org_id,
-      scanId: scan_id,
-      repositoryName: source_repository
-    });
-    // Make the POST request to a given API endpoint
-    core.info(scanReport);
-    const vid = inputs.event_type;
-    const vkey = inputs.issue_trigger_flow;
-    await http.postResourceByAttribute(vid, vkey, scanReport);
+    const getSelfUserDetailsResource = {
+      resourceUri: appConfig.api.veracode.selfUserUri,
+      queryAttribute: '',
+      queryValue: '',
+    };
+    const applicationResponse: VeracodeApplication.OrganizationData =
+        await http.getResourceByAttribute<VeracodeApplication.OrganizationData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
+
+    const commit_sha = inputs.head_sha;
+    const org_id = applicationResponse.organization.org_id;
+    let scan_id;
+    const source_repository = inputs.source_repository;
+
+    core.info('preparePolicyResults : applicationResponse');
+    core.info('commit_sha :' + commit_sha);
+    core.info('org_id :' + org_id);
+    core.info('source_repository :' + source_repository);
+
+    core.info('policyFindings.length :' + policyFindings.length);
+
+    for (let i = 0; i < policyFindings.length; i++) {
+      const element = policyFindings[i];
+      core.info('element.build_id :' + element.build_id);
+      if(typeof element.build_id !== 'undefined'){
+        scan_id = '' + element.build_id;
+        break;
+      }
+    }
+    if(typeof scan_id !== 'undefined'){
+      core.info('preparePolicyResults : POC values');
+      core.info('scan_id :' + scan_id);
+
+      const scanReport = JSON.stringify({
+        scm: 'GITHUB',
+        commitSha: commit_sha,
+        organizationId: org_id,
+        scanId: scan_id,
+        repositoryName: source_repository
+      });
+      // Make the POST request to a given API endpoint
+      core.info(scanReport);
+      const vid = inputs.event_type;
+      const vkey = inputs.issue_trigger_flow;
+      await http.postResourceByAttribute(vid, vkey, scanReport);
+    }
   } catch (error) {
-    core.debug(`Error posting scan report: ${error}`);
+    core.info(`Error posting scan report: ${error}`);
   }
 }
