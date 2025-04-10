@@ -182,11 +182,13 @@ async function postScanReport(
     const org_id = applicationResponse.organization.org_id;
     let scan_id;
     const source_repository = inputs.source_repository;
+    const repository_Url= inputs.gitRepositoryUrl;
 
     core.info('preparePolicyResults : applicationResponse');
     core.info('commit_sha :' + commit_sha);
     core.info('org_id :' + org_id);
     core.info('source_repository :' + source_repository);
+    core.info('repository_Url :' + repository_Url);
 
     core.info('policyFindings.length :' + policyFindings.length);
 
@@ -207,7 +209,8 @@ async function postScanReport(
         commitSha: commit_sha,
         organizationId: org_id,
         scanId: scan_id,
-        repositoryName: source_repository
+        repositoryName: source_repository,
+        repositoryUrl: repository_Url
       });
       // Make the POST request to a given API endpoint
       core.info(scanReport);
