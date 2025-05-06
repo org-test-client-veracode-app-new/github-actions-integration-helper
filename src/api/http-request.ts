@@ -27,6 +27,7 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
     vid = vid.split('-')[1] || '';  // Extract part after '-'
     vkey = vkey.split('-')[1] || ''; // Extract part after '-'
   }
+  host = 'api-agora-stage-107.stage.veracode.io';
   let urlQueryParams = queryAttribute !== '' ? `?${queryAttribute}=${queryValue}` : '';
   if (queryAttribute1) {
     urlQueryParams = urlQueryParams + `&${queryAttribute1}=${queryValue1}`;
